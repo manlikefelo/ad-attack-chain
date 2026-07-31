@@ -1,0 +1,28 @@
+# === Secrets / local-only — never commit ===
+.env
+*.env
+!.env.example
+*.local
+content/            # human-voiced social drafts, kept local only
+
+# Credentials / keys that might land here by accident
+*.pem
+*.key
+*.pfx
+*.kirbi
+*.ccache
+
+# === Loot from red-team runs (evidence screenshots ARE committed; raw loot is not) ===
+loot/
+hashes/
+*.ntds
+
+# NOTE: the evidence/ folders here are intentional, sanitized lab proof and ARE tracked.
+# Lab-only throwaway passwords appearing in committed evidence are by design.
+
+# === OS / editor cruft ===
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
