@@ -16,7 +16,7 @@ username. That makes AS-REP roasting a favourite *pre-access* technique, run bef
 attacker has any foothold in the domain.
 
 **Phase:** Red — power on **KALI01 + DC01** only (Wazuh off). See the
-[operating guide](../../../security-homelab/docs/low-ram-operating-guide.md).
+[operating guide](https://github.com/manlikefelo/security-homelab/blob/main/docs/low-ram-operating-guide.md).
 
 ## 2. Attack (from KALI01)
 
@@ -72,7 +72,7 @@ Search / alert on:
 data.win.system.eventID:4768 AND data.win.eventdata.preAuthType:0
 ```
 A custom rule for this lives in
-[`../../../detection-engineering/wazuh/local_rules.xml`](../../../detection-engineering/wazuh/local_rules.xml)
+[`../../../detection-engineering/wazuh/local_rules.xml`](https://github.com/manlikefelo/detection-engineering/blob/main/wazuh/local_rules.xml)
 (rule id **`100011`**, level 10). It fires on any 4768 whose `preAuthType` is `0`.
 
 ## 5. Remediation (how a defender fixes it)

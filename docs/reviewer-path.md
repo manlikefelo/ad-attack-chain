@@ -26,7 +26,7 @@ helpdesk-tier account replicating every password hash in the domain, including
 
 ### 4. If you want the defender's side
 This whole engagement was **detected**. Head to the companion
-**[detection-engineering](../../detection-engineering)** repo to see each of these
+**[detection-engineering](https://github.com/manlikefelo/detection-engineering)** repo to see each of these
 attacks caught by a Wazuh rule, verified firing end-to-end. Attack here → detect
 there.
 

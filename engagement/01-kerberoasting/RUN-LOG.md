@@ -145,4 +145,4 @@ Raw command output:
 > graphics controller to **VMSVGA with 128 MB VRAM** (`VBoxManage modifyvm KALI01
 > --graphicscontroller vmsvga --vram 128`). With the previous `vboxsvga`/64 MB the
 > GNOME session rendered black/garbled in screenshots. Recorded in
-> [`../../../security-homelab/setup/TROUBLESHOOTING.md`](../../../security-homelab/setup/TROUBLESHOOTING.md).
+> [`../../../security-homelab/setup/TROUBLESHOOTING.md`](https://github.com/manlikefelo/security-homelab/blob/main/setup/TROUBLESHOOTING.md).

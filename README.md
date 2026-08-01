@@ -10,7 +10,7 @@ commands.
 > ### ⚖️ Scope & authorization
 > Everything here targets **DC01 (`lab.local`, 10.10.10.10)** on an isolated,
 > host-only lab network that I built and own — see my
-> [`security-homelab`](../security-homelab) repo for how it was stood up. No system
+> [`security-homelab`](https://github.com/manlikefelo/security-homelab) repo for how it was stood up. No system
 > outside that lab was touched. All credentials, hashes, and tickets below are
 > lab-only throwaways; nothing ties to a real organization. This is the legal,
 > ethical way to practise offensive AD tradecraft: **attack only what you own.**
@@ -72,7 +72,7 @@ Every attack here was **detected** on the blue-team side. The offensive telemetr
 each phase produces (Event IDs 4769, 4768, 4662, 4661) is caught by custom Wazuh
 rules in my companion repo:
 
-> **[detection-engineering](../detection-engineering)** — the same four techniques,
+> **[detection-engineering](https://github.com/manlikefelo/detection-engineering)** — the same four techniques,
 > written as portable Sigma rules and deployed Wazuh rules, each verified firing
 > end-to-end. Attack here → detect there. That red→blue symmetry is the whole point.
 

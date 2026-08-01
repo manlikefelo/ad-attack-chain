@@ -47,7 +47,7 @@ window:
 data.win.system.eventID:(4661 OR 4662) AND data.win.eventdata.subjectUserName:a.mokaya
 ```
 Custom rule `100013` in
-[`../../../detection-engineering/wazuh/local_rules.xml`](../../../detection-engineering/wazuh/local_rules.xml)
+[`../../../detection-engineering/wazuh/local_rules.xml`](https://github.com/manlikefelo/detection-engineering/blob/main/wazuh/local_rules.xml)
 flags directory-enumeration bursts. (Enumeration is inherently noisier to detect than
 the sharp signatures in 01–03 — that nuance is worth calling out in an interview.)
 

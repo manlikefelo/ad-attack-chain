@@ -44,7 +44,7 @@ performed by a principal that is **not** a Domain Controller — the DCSync sign
 data.win.system.eventID:4662 AND data.win.eventdata.properties:(*1131f6aa* OR *1131f6ad*)
 ```
 Custom rule `100012` in
-[`../../../detection-engineering/wazuh/local_rules.xml`](../../../detection-engineering/wazuh/local_rules.xml)
+[`../../../detection-engineering/wazuh/local_rules.xml`](https://github.com/manlikefelo/detection-engineering/blob/main/wazuh/local_rules.xml)
 — fires when a non-DC account exercises replication rights.
 
 ## 5. Remediation

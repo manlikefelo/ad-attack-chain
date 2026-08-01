@@ -12,7 +12,7 @@ individual action.
   am I?"
 - **ATT&CK gives the vocabulary** — a stable, industry-standard ID for each
   attacker behaviour. It's what a blue-teamer uses to map an attack to a detection,
-  and it's how my companion [detection-engineering](../detection-engineering) repo
+  and it's how my companion [detection-engineering](https://github.com/manlikefelo/detection-engineering) repo
   lines its rules up against this repo's attacks one-for-one.
 
 Using both means the same write-up is legible to a pentest lead *and* to a SOC

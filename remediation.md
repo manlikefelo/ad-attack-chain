@@ -91,7 +91,7 @@ domain user can request an RC4-encrypted service ticket and crack it offline.
 **Hardening control.** Inventory all SPN-bearing accounts, enforce gMSA/long-random
 passwords for service accounts, and disable RC4 domain-wide where compatibility
 allows. Detection-side, alert on RC4 (0x17) TGS requests — which is exactly what my
-[detection-engineering](../detection-engineering) rule **100010** does.
+[detection-engineering](https://github.com/manlikefelo/detection-engineering) rule **100010** does.
 
 ---
 

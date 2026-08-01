@@ -55,7 +55,7 @@ Search / alert on:
 data.win.system.eventID:4769 AND data.win.eventdata.ticketEncryptionType:0x17
 ```
 A custom rule for this lives in
-[`../../../detection-engineering/wazuh/local_rules.xml`](../../../detection-engineering/wazuh/local_rules.xml)
+[`../../../detection-engineering/wazuh/local_rules.xml`](https://github.com/manlikefelo/detection-engineering/blob/main/wazuh/local_rules.xml)
 (rule id `100010`). It fires when RC4 TGS requests exceed a threshold.
 
 ## 5. Remediation (how a defender fixes it)
