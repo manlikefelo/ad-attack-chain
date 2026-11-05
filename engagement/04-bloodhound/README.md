@@ -1,7 +1,7 @@
-# Project 04 — BloodHound attack-path mapping (T1069 / T1087)
+# Project 04: BloodHound attack-path mapping (T1069 / T1087)
 
 Collect the domain graph from KALI01 and let BloodHound reveal the privilege-escalation
-paths created by the misconfigurations — including `b.otieno`'s forgotten Domain
+paths created by the misconfigurations, including `b.otieno`'s forgotten Domain
 Admins membership (misconfig #4).
 
 ---
@@ -13,7 +13,7 @@ those paths first. This project ties the earlier findings together visually: the
 Kerberoastable account, the DCSync rights, and the stale Domain Admins membership all
 show up as edges leading to full compromise.
 
-**Phase:** Red — power on **KALI01 + DC01** (any valid domain user is enough to collect).
+**Phase:** Red, power on **KALI01 + DC01** (any valid domain user is enough to collect).
 
 ## 2. Attack (from KALI01)
 ```bash
@@ -28,19 +28,19 @@ built-in queries:
 - **"Shortest Paths from Kerberoastable Users"**
 
 Expected findings (all planted on purpose):
-- `b.otieno` → member of **Domain Admins** (misconfig #4) — instant win.
-- `b.otieno` → **GetChanges/GetChangesAll** on the domain (misconfig #3 — DCSync).
+- `b.otieno` → member of **Domain Admins** (misconfig #4), instant win.
+- `b.otieno` → **GetChanges/GetChangesAll** on the domain (misconfig #3: DCSync).
 - `svc_sql` flagged **Kerberoastable** (misconfig #1).
 
 > **What I proved:** I can enumerate an AD environment and read attack paths the way
-> both an attacker and a defender do — and every path maps back to a specific,
+> both an attacker and a defender do, and every path maps back to a specific,
 > explainable misconfiguration.
 
 ## 3. Telemetry this generates
 Collection is heavy LDAP reads → **Event ID 4661/4662** (object access) and a spike of
 LDAP queries against the DC. It's noisy relative to normal user behaviour.
 
-## 4. Detection (in Wazuh — blue phase)
+## 4. Detection (in Wazuh: blue phase)
 Look for a single host issuing an unusual volume of LDAP/directory reads in a short
 window:
 ```
@@ -49,7 +49,7 @@ data.win.system.eventID:(4661 OR 4662) AND data.win.eventdata.subjectUserName:a.
 Custom rule `100013` in
 [`../../../detection-engineering/wazuh/local_rules.xml`](https://github.com/manlikefelo/detection-engineering/blob/main/wazuh/local_rules.xml)
 flags directory-enumeration bursts. (Enumeration is inherently noisier to detect than
-the sharp signatures in 01–03 — that nuance is worth calling out in an interview.)
+the sharp signatures in 01–03, that nuance is worth calling out in an interview.)
 
 ## 5. Remediation
 - **Cut the paths:** remove `b.otieno` from Domain Admins and strip its replication
@@ -59,20 +59,20 @@ the sharp signatures in 01–03 — that nuance is worth calling out in an inter
 
 ## 6. Evidence
 
-**Red phase** — full-screen KALI01 GUI terminal:
+**Red phase**: full-screen KALI01 GUI terminal:
 
 | # | Shot | What it shows |
 |---|------|---------------|
 | 1 | [`evidence/01-bloodhound-collection.png`](evidence/01-bloodhound-collection.png) | `bloodhound-python -c All` enumerating the domain as low-priv `a.mokaya` |
-| 2 | [`evidence/02-collection-zip-contents.png`](evidence/02-collection-zip-contents.png) | The `_bloodhound.zip` — 7 JSON files ready to graph |
+| 2 | [`evidence/02-collection-zip-contents.png`](evidence/02-collection-zip-contents.png) | The `_bloodhound.zip`: 7 JSON files ready to graph |
 | 4 | [`evidence/04-attack-paths-from-graph.png`](evidence/04-attack-paths-from-graph.png) | Attack paths from the graph: b.otieno in Domain Admins + DCSync rights, svc_sql Kerberoastable, b.otieno AS-REP roastable |
 
-**Blue phase** — Wazuh:
+**Blue phase**: Wazuh:
 
 | # | Shot / file | What it shows |
 |---|-------------|---------------|
-| 3 | [`evidence/03-wazuh-enumeration-alert.png`](evidence/03-wazuh-enumeration-alert.png) | Wazuh Discover (`wazuh-alerts-*`) filtered to `rule.id:100013` — **2 hits** from DC01, `_source` rows showing the 4662 read burst (subject `b.otieno`) |
-| — | [`evidence/wazuh_alert_100013.json`](evidence/wazuh_alert_100013.json) | Full alert JSON: rule 100013 / T1087.002 / frequency 15 / 4662 burst |
+| 3 | [`evidence/03-wazuh-enumeration-alert.png`](evidence/03-wazuh-enumeration-alert.png) | Wazuh Discover (`wazuh-alerts-*`) filtered to `rule.id:100013`: **2 hits** from DC01, `_source` rows showing the 4662 read burst (subject `b.otieno`) |
+| - | [`evidence/wazuh_alert_100013.json`](evidence/wazuh_alert_100013.json) | Full alert JSON: rule 100013 / T1087.002 / frequency 15 / 4662 burst |
 
 Raw output: [`evidence/bloodhound_collection_output.txt`](evidence/bloodhound_collection_output.txt).
 See [`RUN-LOG.md`](RUN-LOG.md) for the exact PTES-structured execution record.
@@ -80,18 +80,18 @@ See [`RUN-LOG.md`](RUN-LOG.md) for the exact PTES-structured execution record.
 ## 7. ATT&CK coverage matrix
 
 Structured on **PTES** phases; every action carries its **MITRE ATT&CK** ID.
-✅ = detected by a Wazuh rule; ⬜ = performed but not the detection point.
+Yes = detected by a Wazuh rule; No = performed but not the detection point.
 
 | PTES phase | Tactic | Technique (ID) | Action in this lab | Telemetry | Detection | Wazuh rule |
 |------------|--------|----------------|--------------------|-----------|-----------|------------|
-| Intelligence Gathering | Discovery | **Account Discovery: Domain (T1087.002)** | `bloodhound-python -c All` enumerates all users | DC01 **4661/4662** read burst | ✅ | **100013** (level 8, freq 15/60s) |
-| Intelligence Gathering | Discovery | Permission Groups Discovery: Domain (T1069.002) | Same run enumerates all groups/memberships | part of the same burst | ✅ (same rule) | 100013 |
-| Intelligence Gathering | Discovery | Domain Trust Discovery (T1482) | Same run enumerates trusts/topology | part of the same burst | ⬜ (covered by the burst rule, not keyed on trusts) | — |
-| Analysis | — | (graph reading — offline) | Read shortest paths to DA, DCSync holders, roastable users | none (offline) | ⬜ | — |
+| Intelligence Gathering | Discovery | **Account Discovery: Domain (T1087.002)** | `bloodhound-python -c All` enumerates all users | DC01 **4661/4662** read burst | Yes | **100013** (level 8, freq 15/60s) |
+| Intelligence Gathering | Discovery | Permission Groups Discovery: Domain (T1069.002) | Same run enumerates all groups/memberships | part of the same burst | (same rule) | 100013 |
+| Intelligence Gathering | Discovery | Domain Trust Discovery (T1482) | Same run enumerates trusts/topology | part of the same burst | No (covered by the burst rule, not keyed on trusts) | - |
+| Analysis | - | (graph reading, offline) | Read shortest paths to DA, DCSync holders, roastable users | none (offline) | No | - |
 
 > **Note for a reviewer:** this is the **noisiest** detection in the lab by design.
 > Enumeration is a *rate* signal, so rule 100013 uses frequency+timeframe, which trades
-> precision for coverage — the opposite trade-off from the sharp single-event
+> precision for coverage: the opposite trade-off from the sharp single-event
 > signatures in 01–03 (4769/RC4, 4768/preAuth-0, 4662/replication-GUID). Detecting
 > "breadth of reads" is inherently harder than detecting one dangerous operation, and
 > the rule needs tuning/whitelisting in production.

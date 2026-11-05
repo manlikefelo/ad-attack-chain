@@ -1,15 +1,15 @@
-# Active Directory Attack Chain 🔴
+# Active Directory Attack Chain
 
 An **authorized** red-team engagement against my own `lab.local` Active Directory,
 run entirely inside an isolated home lab. Starting from a single low-privileged
 domain user (in one case, from *no credentials at all*), I chain four techniques
-into full domain compromise — and every action is mapped to a MITRE ATT&CK
+into full domain compromise, and every action is mapped to a MITRE ATT&CK
 technique ID and written up so a reader can follow the reasoning, not just the
 commands.
 
-> ### ⚖️ Scope & authorization
+> ### Scope & authorization
 > Everything here targets **DC01 (`lab.local`, 10.10.10.10)** on an isolated,
-> host-only lab network that I built and own — see my
+> host-only lab network that I built and own, see my
 > [`security-homelab`](https://github.com/manlikefelo/security-homelab) repo for how it was stood up. No system
 > outside that lab was touched. All credentials, hashes, and tickets below are
 > lab-only throwaways; nothing ties to a real organization. This is the legal,
@@ -38,7 +38,7 @@ AS-REP roast (no creds)  ─►  b.otieno's password
 
 Each phase is a self-contained write-up under [`/engagement`](engagement/) with the
 exact commands, real screenshots from the attacker box, and the telemetry it
-generated. Read them in order — they build on each other.
+generated. Read them in order. They build on each other.
 
 | # | Phase | Technique (ATT&CK) | What it achieves | Write-up |
 |---|-------|--------------------|------------------|----------|
@@ -62,28 +62,28 @@ generated. Read them in order — they build on each other.
 ## Tools used
 
 All free, all Kali defaults: `impacket` (GetUserSPNs, GetNPUsers, secretsdump),
-`bloodhound-python` + BloodHound CE, `john` (CPU cracker — this host has no GPU, so
+`bloodhound-python` + BloodHound CE, `john` (CPU cracker. This host has no GPU, so
 John substitutes for the canonical hashcat modes; each write-up notes the hashcat
 command too), `netexec`, `nmap`.
 
-## Detections generated ➡️
+## Detections generated →
 
 Every attack here was **detected** on the blue-team side. The offensive telemetry
 each phase produces (Event IDs 4769, 4768, 4662, 4661) is caught by custom Wazuh
 rules in my companion repo:
 
-> **[detection-engineering](https://github.com/manlikefelo/detection-engineering)** — the same four techniques,
+> **[detection-engineering](https://github.com/manlikefelo/detection-engineering)**: the same four techniques,
 > written as portable Sigma rules and deployed Wazuh rules, each verified firing
 > end-to-end. Attack here → detect there. That red→blue symmetry is the whole point.
 
 ## Read next
 
-- **[`executive-summary.md`](executive-summary.md)** — one page, non-technical: what an
+- **[`executive-summary.md`](executive-summary.md)**: one page, non-technical: what an
   attacker could achieve and the top fixes.
-- **[`methodology.md`](methodology.md)** — how the engagement is structured (PTES + ATT&CK).
-- **[`remediation.md`](remediation.md)** — the concrete fix and hardening control for
+- **[`methodology.md`](methodology.md)**: how the engagement is structured (PTES + ATT&CK).
+- **[`remediation.md`](remediation.md)**: the concrete fix and hardening control for
   every misconfiguration I exploited.
-- **[`docs/reviewer-path.md`](docs/reviewer-path.md)** — a 3-minute guided tour if
+- **[`docs/reviewer-path.md`](docs/reviewer-path.md)**: a 3-minute guided tour if
   you're a hiring manager.
 
 ## Skills demonstrated

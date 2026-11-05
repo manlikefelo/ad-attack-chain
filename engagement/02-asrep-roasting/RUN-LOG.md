@@ -1,4 +1,4 @@
-# Project 02 — AS-REP Roasting: Run Log
+# Project 02: AS-REP Roasting run log
 
 Actual execution record of the attack described in [`README.md`](README.md).
 Run on **2026-07-30** from KALI01 (`10.10.10.40`) against DC01 (`10.10.10.10`),
@@ -7,17 +7,17 @@ red phase (KALI01 + DC01 up, Wazuh off).
 ---
 
 ## Environment at run time
-- **KALI01** — Kali 2026.2, `felix@felix`, eth0 = NAT (`10.0.2.15`, internet),
+- **KALI01**: Kali 2026.2, `felix@felix`, eth0 = NAT (`10.0.2.15`, internet),
   eth1 = host-only (`10.10.10.40/24`, static, DNS → `10.10.10.10`).
-- **DC01** — `lab.local` DC, `10.10.10.10`, NTDS running, DNS resolving. Reachable
+- **DC01**: `lab.local` DC, `10.10.10.10`, NTDS running, DNS resolving. Reachable
   from Kali over the host-only net.
 - Tooling shipped with Kali: `impacket-GetNPUsers`, `john` (krb5asrep format),
   `hashcat v7.1.2`.
 
-## Step 1 — Pull the AS-REP with no credentials
+## Step 1: Pull the AS-REP with no credentials
 
 `b.otieno` has `DoesNotRequirePreAuth = True` (misconfig #2), so the DC returns its
-AS-REP to an **unauthenticated** request — `-no-pass` sends no credentials at all:
+AS-REP to an **unauthenticated** request: `-no-pass` sends no credentials at all:
 
 ```bash
 impacket-GetNPUsers lab.local/b.otieno -dc-ip 10.10.10.10 -no-pass \
@@ -32,9 +32,9 @@ $krb5asrep$23$b.otieno@LAB.LOCAL:b2ab3b16...<truncated>
 ```
 
 The `$23$` = RC4 (etype 0x17). No password was supplied, yet the DC handed over
-crackable material — that is the whole point of the misconfiguration.
+crackable material, that is the whole point of the misconfiguration.
 
-## Step 2 — Crack the hash offline
+## Step 2: Crack the hash offline
 
 The canonical tool is **hashcat mode 18200**:
 
@@ -65,17 +65,17 @@ $krb5asrep$23$b.otieno@LAB.LOCAL:Password1
 
 ## Result
 
-Starting from **nothing — no domain credentials at all** — I recovered a domain
+Starting from **nothing, no domain credentials at all**, I recovered a domain
 user's plaintext password. And `b.otieno` is not just any user: in this lab that
 account is also a member of Domain Admins and holds replication rights (it is the
 pivot account the DCSync project uses). AS-REP roasting turned an anonymous network
 position into Domain-Admin credentials in two commands. That is why pre-auth being
 disabled on even one privileged account is a serious finding.
 
-## Blue phase — detection fired (2026-07-30)
+## Blue phase: detection fired (2026-07-30)
 
 With WAZUH01 up and the DC01 Wazuh agent reporting, I re-ran the AS-REP roast live
-(all three VMs on: DC01 squeezed to 2 GB + KALI01 + WAZUH01 — the Phase-3
+(all three VMs on: DC01 squeezed to 2 GB + KALI01 + WAZUH01: the Phase-3
 "real-time detection" layout from the operating guide) and the detection worked
 end-to-end.
 
@@ -118,12 +118,12 @@ and detected (blue). The full alert document is saved at
 > *synthetic pointer* click, so the per-row "expand document" click could not be
 > automated; the complete field-level detail is captured instead as the raw alert
 > JSON (`evidence/wazuh_alert_100011.json`), which is more complete than the
-> expanded-row view anyway. Keyboard injection is unaffected — the login, cert
+> expanded-row view anyway. Keyboard injection is unaffected: the login, cert
 > accept, and query were all driven that way.
 
 ## Evidence
 
-**Red phase** — screenshots captured live from the KALI01 GUI terminal (2026-07-30):
+**Red phase**: screenshots captured live from the KALI01 GUI terminal (2026-07-30):
 
 Captured full-screen so the whole command chain is legible in one frame:
 
@@ -134,14 +134,14 @@ Captured full-screen so the whole command chain is legible in one frame:
 | 3 | [`evidence/03-john-cracks-password.png`](evidence/03-john-cracks-password.png) | John cracking the AS-REP → **`b.otieno : Password1`** |
 | 4 | [`evidence/04-full-chain.png`](evidence/04-full-chain.png) | The full chain end to end in one maximized terminal: reach → roast → crack → `--show` |
 
-**Blue phase** — screenshot from the Wazuh dashboard (Firefox in the KALI01 session),
+**Blue phase**: screenshot from the Wazuh dashboard (Firefox in the KALI01 session),
 2026-07-30:
 
 | # | Shot | What it shows |
 |---|------|---------------|
-| 5 | [`evidence/05-wazuh-asrep-alert.png`](evidence/05-wazuh-asrep-alert.png) | Discover filtered to `rule.id:100011` — **2 hits** from DC01, showing 4768 / preAuthType 0 / RC4 (0x17) / `b.otieno` / krbtgt, source `::ffff:10.10.10.40` inline |
+| 5 | [`evidence/05-wazuh-asrep-alert.png`](evidence/05-wazuh-asrep-alert.png) | Discover filtered to `rule.id:100011`: **2 hits** from DC01, showing 4768 / preAuthType 0 / RC4 (0x17) / `b.otieno` / krbtgt, source `::ffff:10.10.10.40` inline |
 
 Raw command output & alert data:
-- [`evidence/getnpusers_output.txt`](evidence/getnpusers_output.txt) — AS-REP hash pulled with no password
-- [`evidence/john_output.txt`](evidence/john_output.txt) — offline crack recovering `Password1`
-- [`evidence/wazuh_alert_100011.json`](evidence/wazuh_alert_100011.json) — the full Wazuh alert document (every `data.win.*` field)
+- [`evidence/getnpusers_output.txt`](evidence/getnpusers_output.txt): AS-REP hash pulled with no password
+- [`evidence/john_output.txt`](evidence/john_output.txt): offline crack recovering `Password1`
+- [`evidence/wazuh_alert_100011.json`](evidence/wazuh_alert_100011.json): the full Wazuh alert document (every `data.win.*` field)

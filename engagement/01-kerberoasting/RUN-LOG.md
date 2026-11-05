@@ -1,4 +1,4 @@
-# Project 01 — Kerberoasting: Run Log
+# Project 01: Kerberoasting run log
 
 Actual execution record of the attack described in [`README.md`](README.md).
 Run on **2026-07-24** from KALI01 (`10.10.10.40`) against DC01 (`10.10.10.10`),
@@ -7,16 +7,16 @@ red phase (KALI01 + DC01 up, Wazuh off).
 ---
 
 ## Environment at run time
-- **KALI01** — Kali 2026.2, `felix@felix`, eth0 = NAT (`10.0.2.15`, internet),
+- **KALI01**: Kali 2026.2, `felix@felix`, eth0 = NAT (`10.0.2.15`, internet),
   eth1 = host-only (`10.10.10.40/24`, static, DNS → `10.10.10.10`).
-- **DC01** — `lab.local` DC, `10.10.10.10`, NTDS running. DNS resolves
+- **DC01**: `lab.local` DC, `10.10.10.10`, NTDS running. DNS resolves
   `dc01.lab.local` and reverse. Ping + Kerberos reachable from Kali.
-- Tooling shipped with Kali: `impacket-GetUserSPNs`, `john` (v — krb5tgs format),
+- Tooling shipped with Kali: `impacket-GetUserSPNs`, `john` (v, krb5tgs format),
   `hashcat v7.1.2`, `netexec`.
 
-## Step 1 — Request the service ticket (Kerberoast)
+## Step 1: Request the service ticket (Kerberoast)
 
-Run as a **low-privileged** domain user (`a.mokaya`) — the whole point is that no
+Run as a **low-privileged** domain user (`a.mokaya`): the whole point is that no
 elevation is required:
 
 ```bash
@@ -38,10 +38,10 @@ A single SPN account (`svc_sql`, misconfig #1) was found and a TGS-REP hash writ
 $krb5tgs$23$*svc_sql$LAB.LOCAL$lab.local/svc_sql*$b52ecd83...<truncated>
 ```
 
-The `$23$` = RC4 (etype 0x17) — the crackable encryption type. Modern accounts
+The `$23$` = RC4 (etype 0x17): the crackable encryption type. Modern accounts
 should use AES (0x12); RC4 here is what makes offline cracking fast.
 
-## Step 2 — Crack the hash offline
+## Step 2: Crack the hash offline
 
 The canonical tool is **hashcat mode 13100**:
 
@@ -68,17 +68,17 @@ P@ssw0rd         (?)
 1g 0:00:00:00 DONE  ...
 ```
 
-**Recovered credential: `svc_sql : P@ssw0rd`** — cracked in under a second because the
+**Recovered credential: `svc_sql: P@ssw0rd`**: cracked in under a second because the
 service account was given a weak password on purpose.
 
 ## Result
 
 Starting from an ordinary domain user, I recovered a service account's plaintext
-password with **no elevation and no interaction with the target service** — a
+password with **no elevation and no interaction with the target service**: a
 realistic foothold-to-escalation step. `svc_sql`'s credentials can now be reused
 (e.g. against the SQL service, or as a spray/pivot candidate).
 
-## Blue phase — detection fired (2026-07-25)
+## Blue phase: detection fired (2026-07-25)
 
 With WAZUH01 up and a Wazuh agent enrolled on DC01, I re-ran the Kerberoast (all three
 VMs live: DC01 + KALI01 + WAZUH01) and the detection worked end-to-end.
@@ -111,7 +111,7 @@ That closes the loop for misconfig #1: the **same finding** is both exploited
 
 > **Note on the rule field path:** the rule keys on `win.eventdata.ticketEncryptionType`
 > from Wazuh's Windows-eventchannel decoder. A `wazuh-logtest` dry-run with hand-built
-> JSON won't match (it decodes as generic `json`, never entering the `windows` group) —
+> JSON won't match (it decodes as generic `json`, never entering the `windows` group):
 > only a real agent-sourced 4769 decodes correctly. The live run is the real test, and
 > it matched.
 >
@@ -121,7 +121,7 @@ That closes the loop for misconfig #1: the **same finding** is both exploited
 
 ## Evidence
 
-**Red phase** — screenshots captured live from the KALI01 GUI terminal (2026-07-24):
+**Red phase**: screenshots captured live from the KALI01 GUI terminal (2026-07-24):
 
 | # | Shot | What it shows |
 |---|------|---------------|
@@ -129,17 +129,17 @@ That closes the loop for misconfig #1: the **same finding** is both exploited
 | 2 | [`evidence/02-getuserspns-svc_sql.png`](evidence/02-getuserspns-svc_sql.png) | `impacket-GetUserSPNs` as `a.mokaya` enumerating the `svc_sql` SPN and requesting the TGS |
 | 3 | [`evidence/03-john-cracks-password.png`](evidence/03-john-cracks-password.png) | John cracking the RC4 TGS → **`svc_sql : P@ssw0rd`** |
 
-**Blue phase** — screenshots from the Wazuh dashboard at `https://10.10.10.50` (2026-07-25):
+**Blue phase**: screenshots from the Wazuh dashboard at `https://10.10.10.50` (2026-07-25):
 
 | # | Shot | What it shows |
 |---|------|---------------|
 | 4 | [`evidence/04-wazuh-login.png`](evidence/04-wazuh-login.png) | Wazuh dashboard login (stack live on the lab net) |
-| 5 | [`evidence/05-wazuh-kerberoast-alert.png`](evidence/05-wazuh-kerberoast-alert.png) | Discover filtered to `rule.id:100010` — **1 hit**, showing 4769 / RC4 (0x17) / `svc_sql` from DC01, source `10.10.10.40` |
-| 6 | [`evidence/06-wazuh-alert-detail.png`](evidence/06-wazuh-alert-detail.png) | The alert's expanded document — full `data.win.*` field table for the Kerberoast event |
+| 5 | [`evidence/05-wazuh-kerberoast-alert.png`](evidence/05-wazuh-kerberoast-alert.png) | Discover filtered to `rule.id:100010`: **1 hit**, showing 4769 / RC4 (0x17) / `svc_sql` from DC01, source `10.10.10.40` |
+| 6 | [`evidence/06-wazuh-alert-detail.png`](evidence/06-wazuh-alert-detail.png) | The alert's expanded document, full `data.win.*` field table for the Kerberoast event |
 
 Raw command output:
-- [`evidence/getuserspns_output.txt`](evidence/getuserspns_output.txt) — SPN enumeration + TGS request
-- [`evidence/john_output.txt`](evidence/john_output.txt) — offline crack recovering `P@ssw0rd`
+- [`evidence/getuserspns_output.txt`](evidence/getuserspns_output.txt): SPN enumeration + TGS request
+- [`evidence/john_output.txt`](evidence/john_output.txt): offline crack recovering `P@ssw0rd`
 
 > **Display note:** capturing legible GUI screenshots required switching KALI01's
 > graphics controller to **VMSVGA with 128 MB VRAM** (`VBoxManage modifyvm KALI01
