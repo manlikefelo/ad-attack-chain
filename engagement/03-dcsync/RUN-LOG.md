@@ -72,8 +72,8 @@ krbtgt:aes256-cts-hmac-sha1-96:0e8ec2dcdbbed1ca9343b73a0de3616f9468bc2bd2d0496c2
 ```
 The `krbtgt` NT hash is the key material for forging a **Golden Ticket**
 (**T1558.001**): a self-issued TGT for any user, valid until krbtgt is rotated
-twice. I stop at recovering the key (I don't forge a ticket), but recovering it is the
-whole point: DCSync → krbtgt → effectively permanent domain compromise.
+twice. I stop at recovering the key (I don't forge a ticket), but recovering it is
+enough: DCSync → krbtgt → effectively permanent domain compromise.
 Evidence: [`evidence/03-dcsync-krbtgt-golden-key.png`](evidence/03-dcsync-krbtgt-golden-key.png).
 
 ## Result
