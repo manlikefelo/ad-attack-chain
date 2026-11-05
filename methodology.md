@@ -27,12 +27,12 @@ analyst, which is exactly the purple-team framing I'm going for.
 | **3. Threat modelling** | Read the BloodHound graph to identify the shortest paths to Domain Admin and which principals hold dangerous rights (DCSync, DA membership). |
 | **4. Vulnerability analysis** | Identified the four planted weaknesses: a Kerberoastable SPN account, a pre-auth-disabled account, over-granted replication rights, and a stale Domain Admins membership. |
 | **5. Exploitation** | Kerberoasting (01), AS-REP roasting (02), DCSync (03): each recovering credentials or hashes. |
-| **6. Post-exploitation** | krbtgt hash recovered → Golden Ticket capability (full, persistent domain control). Proof-of-compromise captured, sanitized. |
+| **6. Post-exploitation** | krbtgt hash recovered, giving Golden Ticket capability (full, persistent domain control). Proof-of-compromise captured, sanitized. |
 | **7. Reporting** | This repo: per-phase technical write-ups, an [executive summary](executive-summary.md), a [remediation plan](remediation.md), and the ATT&CK mapping. |
 
 ## How each phase is documented
 
-Every folder under [`/engagement`](engagement/) uses the same shape so a reviewer can
+Every folder under [`/engagement`](engagement/) uses the same shape so a reader can
 compare them quickly:
 
 1. **Scenario**: what the weakness is and why it matters in the real world.
@@ -47,7 +47,7 @@ compare them quickly:
 Each phase also has a **`RUN-LOG.md`**: the actual execution record (dates,
 real command output, the gotchas I hit) as distinct from the polished README.
 
-## A note on honesty
+## Limits of this work
 
 Where a tool didn't behave as the textbook says, I documented it rather than hiding
 it, e.g. this GPU-less host couldn't run hashcat's OpenCL backend, so I cracked

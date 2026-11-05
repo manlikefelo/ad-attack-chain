@@ -8,7 +8,7 @@ every action carries its ATT&CK ID.
 ---
 
 ## Environment at run time
-- **KALI01**: Kali 2026.2, `felix@felix`, eth1 = host-only `10.10.10.40/24`, DNS → DC01.
+- **KALI01**: Kali 2026.2, `felix@felix`, eth1 = host-only `10.10.10.40/24`, DNS pointing at DC01.
 - **DC01**: `lab.local` DC, `10.10.10.10`, NTDS running.
 - **Credential in hand:** `b.otieno: Password1`, recovered in Project 02 (AS-REP
   roasting). In this lab `b.otieno` is a Tier-2 helpdesk account that was wrongly
@@ -24,7 +24,7 @@ every action carries its ATT&CK ID.
 | Intelligence Gathering | Discovery | Confirm reachability of the DC (ping/DNS) before replicating | T1018 (Remote System Discovery) |
 | (creds already held) | Credential Access | `b.otieno` password obtained in Project 02 | T1558.004 (AS-REP Roasting) |
 | Exploitation | Credential Access | **DCSync**, impersonate a DC over DRSUAPI and replicate NTDS secrets | **T1003.006** (OS Credential Dumping: DCSync) |
-| Post-Exploitation | - | krbtgt hash pulled → enables Golden Ticket forging (persistence) | T1558.001 (Golden Ticket), *enabled, not performed* |
+| Post-Exploitation | - | krbtgt hash pulled, which enables Golden Ticket forging (persistence) | T1558.001 (Golden Ticket), *enabled, not performed* |
 | Reporting / detection | - | Blue-phase detection of the 4662 replication event in Wazuh | - |
 
 ## Step 1: Intelligence Gathering: confirm reach to the DC (T1018)
@@ -60,7 +60,7 @@ DC01$:1000:...  WS01$:1122:...
 ```
 Evidence (full-screen terminal): [`evidence/02-dcsync-full-domain-dump.png`](evidence/02-dcsync-full-domain-dump.png).
 
-## Step 3: Post-Exploitation: isolate the crown jewel, krbtgt (enables T1558.001)
+## Step 3: Post-Exploitation: isolate krbtgt (enables T1558.001)
 
 ```bash
 impacket-secretsdump 'lab.local/b.otieno:Password1@10.10.10.10' -just-dc-user krbtgt
@@ -102,7 +102,7 @@ DC01's agent shipped the 4662, and custom rule **100012** matched. Filtering
 |-------|-------|
 | rule.id / level | **100012** / 12 |
 | rule.description | DCSync: directory replication rights exercised (possible domain hash dump) [T1003.006] |
-| rule.mitre | **T1003.006** (Credential Access → DCSync) |
+| rule.mitre | **T1003.006** (Credential Access / DCSync) |
 | agent.name | **DC01** (id 001) |
 | data.win.system.eventID | **4662** |
 | data.win.eventdata.subjectUserName | **b.otieno** (the over-permissioned helpdesk account) |

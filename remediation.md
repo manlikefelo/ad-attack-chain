@@ -1,8 +1,7 @@
 # Remediation
 
 For each misconfiguration I exploited, here's the concrete fix and the hardening
-control behind it. This is the section that matters most to a hiring manager: it
-shows I can close the door as well as walk through it. Fixes are ordered by impact,
+control behind it. Fixes are ordered by impact,
 do the top ones first.
 
 ## Priority summary
@@ -19,7 +18,7 @@ severe, and why fixing that single account collapses most of the attack path.
 
 ---
 
-## 1. Remove stale Domain Admins membership  (T1087.002 → the DA edge)
+## 1. Remove stale Domain Admins membership  (T1087.002, the DA edge)
 
 **Problem.** `b.otieno`, a Tier-2 helpdesk account, is a member of **Domain Admins**:
 a "temporary" grant that was never revoked. BloodHound shows it as a direct edge to
@@ -79,7 +78,7 @@ offline in reasonable time.
 (`MSSQLSvc/dc01.lab.local:1433`) with a weak password and RC4 enabled, so any
 domain user can request an RC4-encrypted service ticket and crack it offline.
 
-**Fix (best → acceptable):**
+**Fix (best to acceptable):**
 - **Best:** convert to a **Group Managed Service Account (gMSA)** so the password is
   128 chars, machine-managed, and rotated automatically, un-crackable in practice.
 - **Otherwise:** set a **25+ character random password** and force AES, removing RC4:

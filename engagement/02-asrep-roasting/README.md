@@ -99,7 +99,7 @@ Reset the lab afterward by restoring DC01's clean snapshot.
 |---|------|---------------|
 | 1 | [`evidence/01-kali-reaches-dc.png`](evidence/01-kali-reaches-dc.png) | Kali on `10.10.10.40` reaching DC01 (ping, 0% loss) |
 | 2 | [`evidence/02-getnpusers-asrep.png`](evidence/02-getnpusers-asrep.png) | `impacket-GetNPUsers -no-pass` pulling `b.otieno`'s AS-REP hash with **no credentials** |
-| 3 | [`evidence/03-john-cracks-password.png`](evidence/03-john-cracks-password.png) | John cracking the AS-REP → **`b.otieno : Password1`** |
+| 3 | [`evidence/03-john-cracks-password.png`](evidence/03-john-cracks-password.png) | John cracking the AS-REP: **`b.otieno : Password1`** |
 | 4 | [`evidence/04-full-chain.png`](evidence/04-full-chain.png) | The whole chain in one full-screen terminal: reach → roast → crack → `--show` |
 
 **Blue phase**: screenshot from the Wazuh dashboard at `https://10.10.10.50`:
@@ -124,11 +124,11 @@ not the point where I detect.
 | Tactic | Technique (ID) | Attacker action in this lab | Telemetry | Detection | Wazuh rule |
 |--------|----------------|------------------------------|-----------|-----------|------------|
 | Credential Access | **AS-REP Roasting (T1558.004)** | `GetNPUsers -no-pass` pulls `b.otieno`'s AS-REP with **no credentials** (pre-auth disabled) | DC01 Event **4768**, `preAuthType 0` (+ `ticketEncryptionType 0x17` RC4) | Yes | **100011** (level 10) |
-| Credential Access | Brute Force: Password Cracking (T1110.002) | Offline crack of the AS-REP hash (John/hashcat) → `b.otieno: Password1` | none, offline, off-host | No (offline, no telemetry by design) | - |
+| Credential Access | Brute Force: Password Cracking (T1110.002) | Offline crack of the AS-REP hash (John/hashcat): `b.otieno: Password1` | none, offline, off-host | No (offline, no telemetry by design) | - |
 
-> **Impact note for a reviewer:** `b.otieno` is a **Domain Admin** with replication
+> **Impact note:** `b.otieno` is a **Domain Admin** with replication
 > rights, so this single technique takes an *unauthenticated* attacker straight to
 > Domain-Admin credentials: the pivot the DCSync project (T1003.006) then abuses.
 
 **One-line summary:** detects AS-REP Roasting at the AS-REQ step (4768 / preAuthType 0)
-via rule **100011** → MITRE **T1558.004** (Credential Access).
+via rule **100011**, mapped to MITRE **T1558.004** (Credential Access).

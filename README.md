@@ -42,10 +42,10 @@ generated. Read them in order. They build on each other.
 
 | # | Phase | Technique (ATT&CK) | What it achieves | Write-up |
 |---|-------|--------------------|------------------|----------|
-| 01 | Kerberoasting | **T1558.003** | Crack `svc_sql`'s password from a normal user | [→](engagement/01-kerberoasting/) |
-| 02 | AS-REP Roasting | **T1558.004** | Crack `b.otieno`'s password with **no credentials** | [→](engagement/02-asrep-roasting/) |
-| 03 | DCSync | **T1003.006** | Replicate every domain hash (incl. `krbtgt`) as `b.otieno` | [→](engagement/03-dcsync/) |
-| 04 | BloodHound mapping | **T1087.002 / T1069.002** | Graph every attack path to Domain Admin | [→](engagement/04-bloodhound/) |
+| 01 | Kerberoasting | **T1558.003** | Crack `svc_sql`'s password from a normal user | [Open](engagement/01-kerberoasting/) |
+| 02 | AS-REP Roasting | **T1558.004** | Crack `b.otieno`'s password with **no credentials** | [Open](engagement/02-asrep-roasting/) |
+| 03 | DCSync | **T1003.006** | Replicate every domain hash (incl. `krbtgt`) as `b.otieno` | [Open](engagement/03-dcsync/) |
+| 04 | BloodHound mapping | **T1087.002 / T1069.002** | Graph every attack path to Domain Admin | [Open](engagement/04-bloodhound/) |
 
 ## ATT&CK technique table
 
@@ -66,15 +66,14 @@ All free, all Kali defaults: `impacket` (GetUserSPNs, GetNPUsers, secretsdump),
 John substitutes for the canonical hashcat modes; each write-up notes the hashcat
 command too), `netexec`, `nmap`.
 
-## Detections generated →
-
+## Detections generated
 Every attack here was **detected** on the blue-team side. The offensive telemetry
 each phase produces (Event IDs 4769, 4768, 4662, 4661) is caught by custom Wazuh
 rules in my companion repo:
 
 > **[detection-engineering](https://github.com/manlikefelo/detection-engineering)**: the same four techniques,
 > written as portable Sigma rules and deployed Wazuh rules, each verified firing
-> end-to-end. Attack here → detect there. That red→blue symmetry is the whole point.
+> end-to-end. Attack here → detect there. Each attack has a matching detection.
 
 ## Read next
 
@@ -83,8 +82,7 @@ rules in my companion repo:
 - **[`methodology.md`](methodology.md)**: how the engagement is structured (PTES + ATT&CK).
 - **[`remediation.md`](remediation.md)**: the concrete fix and hardening control for
   every misconfiguration I exploited.
-- **[`docs/reviewer-path.md`](docs/reviewer-path.md)**: a 3-minute guided tour if
-  you're a hiring manager.
+- **[`docs/reviewer-path.md`](docs/reviewer-path.md)**: a short guide to this repo.
 
 ## Skills demonstrated
 

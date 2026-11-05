@@ -28,8 +28,8 @@ built-in queries:
 - **"Shortest Paths from Kerberoastable Users"**
 
 Expected findings (all planted on purpose):
-- `b.otieno` → member of **Domain Admins** (misconfig #4), instant win.
-- `b.otieno` → **GetChanges/GetChangesAll** on the domain (misconfig #3: DCSync).
+- `b.otieno` is a member of **Domain Admins** (misconfig #4), instant win.
+- `b.otieno` holds **GetChanges/GetChangesAll** on the domain (misconfig #3: DCSync).
 - `svc_sql` flagged **Kerberoastable** (misconfig #1).
 
 > **What I proved:** I can enumerate an AD environment and read attack paths the way
@@ -37,7 +37,7 @@ Expected findings (all planted on purpose):
 > explainable misconfiguration.
 
 ## 3. Telemetry this generates
-Collection is heavy LDAP reads → **Event ID 4661/4662** (object access) and a spike of
+Collection is heavy LDAP reads, producing **Event ID 4661/4662** (object access) and a spike of
 LDAP queries against the DC. It's noisy relative to normal user behaviour.
 
 ## 4. Detection (in Wazuh: blue phase)
@@ -49,7 +49,7 @@ data.win.system.eventID:(4661 OR 4662) AND data.win.eventdata.subjectUserName:a.
 Custom rule `100013` in
 [`../../../detection-engineering/wazuh/local_rules.xml`](https://github.com/manlikefelo/detection-engineering/blob/main/wazuh/local_rules.xml)
 flags directory-enumeration bursts. (Enumeration is inherently noisier to detect than
-the sharp signatures in 01–03, that nuance is worth calling out in an interview.)
+the sharp signatures in 01–03, that nuance matters.)
 
 ## 5. Remediation
 - **Cut the paths:** remove `b.otieno` from Domain Admins and strip its replication
@@ -89,7 +89,7 @@ Yes = detected by a Wazuh rule; No = performed but not the detection point.
 | Intelligence Gathering | Discovery | Domain Trust Discovery (T1482) | Same run enumerates trusts/topology | part of the same burst | No (covered by the burst rule, not keyed on trusts) | - |
 | Analysis | - | (graph reading, offline) | Read shortest paths to DA, DCSync holders, roastable users | none (offline) | No | - |
 
-> **Note for a reviewer:** this is the **noisiest** detection in the lab by design.
+> **Note:** this is the **noisiest** detection in the lab by design.
 > Enumeration is a *rate* signal, so rule 100013 uses frequency+timeframe, which trades
 > precision for coverage: the opposite trade-off from the sharp single-event
 > signatures in 01–03 (4769/RC4, 4768/preAuth-0, 4662/replication-GUID). Detecting
@@ -97,5 +97,5 @@ Yes = detected by a Wazuh rule; No = performed but not the detection point.
 > the rule needs tuning/whitelisting in production.
 
 **One-line summary:** detects the BloodHound/SharpHound collection as a directory-read
-burst via rule **100013** → MITRE **T1087.002** (Discovery). The graph itself unifies
+burst via rule **100013**, mapped to MITRE **T1087.002** (Discovery). The graph itself unifies
 Projects 01–03: every finding is an edge to Domain Admin, all through `b.otieno`.

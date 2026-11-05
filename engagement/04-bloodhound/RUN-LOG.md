@@ -45,7 +45,7 @@ INFO: Found 19 containers
 INFO: Done in 00M 31S
 INFO: Compressing output into 20260731054145_bloodhound.zip
 ```
-The whole directory read in **31 seconds** by an ordinary user → a `*_bloodhound.zip`
+The whole directory read in **31 seconds** by an ordinary user, producing a `*_bloodhound.zip`
 of 7 JSON files ready to graph.
 Evidence: [`evidence/01-bloodhound-collection.png`](evidence/01-bloodhound-collection.png),
 [`evidence/02-collection-zip-contents.png`](evidence/02-collection-zip-contents.png).
@@ -93,7 +93,7 @@ rule **100013** matched. Filtering `rule.id:100013` returns the hits (fired 2×)
 |-------|-------|
 | rule.id / level | **100013** / 8 |
 | rule.description | Directory enumeration burst (possible BloodHound/SharpHound collection) [T1087] |
-| rule.mitre | **T1087.002** (Discovery → Domain Account) |
+| rule.mitre | **T1087.002** (Discovery / Domain Account) |
 | rule.frequency | **15** (events in the window that trip the rule) |
 | agent.name | **DC01** (id 001) |
 | triggering eventID | **4662** (directory object access), amid the correlated burst |
@@ -103,7 +103,7 @@ Dashboard: [`evidence/03-wazuh-enumeration-alert.png`](evidence/03-wazuh-enumera
 Wazuh Discover filtered to `rule.id:100013`, **2 hits** rendered from DC01, the
 `_source` rows showing the correlated 4662 read burst (subject `b.otieno`).
 
-> **Honest nuance (worth an interview):** this is the noisiest detection in the lab.
+> **Nuance:** this is the noisiest detection in the lab.
 > A single Kerberoast (4769/RC4) or DCSync (4662/replication-GUID) is a sharp,
 > high-confidence signature. Enumeration blends into normal directory traffic, so a
 > rate rule trades precision for coverage and needs tuning (threshold, whitelisting

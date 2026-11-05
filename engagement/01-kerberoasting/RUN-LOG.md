@@ -8,7 +8,7 @@ red phase (KALI01 + DC01 up, Wazuh off).
 
 ## Environment at run time
 - **KALI01**: Kali 2026.2, `felix@felix`, eth0 = NAT (`10.0.2.15`, internet),
-  eth1 = host-only (`10.10.10.40/24`, static, DNS → `10.10.10.10`).
+  eth1 = host-only (`10.10.10.40/24`, static, DNS `10.10.10.10`).
 - **DC01**: `lab.local` DC, `10.10.10.10`, NTDS running. DNS resolves
   `dc01.lab.local` and reverse. Ping + Kerberos reachable from Kali.
 - Tooling shipped with Kali: `impacket-GetUserSPNs`, `john` (v, krb5tgs format),
@@ -16,7 +16,7 @@ red phase (KALI01 + DC01 up, Wazuh off).
 
 ## Step 1: Request the service ticket (Kerberoast)
 
-Run as a **low-privileged** domain user (`a.mokaya`): the whole point is that no
+Run as a **low-privileged** domain user (`a.mokaya`): the attack needs no
 elevation is required:
 
 ```bash
@@ -127,7 +127,7 @@ That closes the loop for misconfig #1: the **same finding** is both exploited
 |---|------|---------------|
 | 1 | [`evidence/01-kali-reaches-dc.png`](evidence/01-kali-reaches-dc.png) | Kali on `10.10.10.40` pinging DC01 and resolving `dc01.lab.local` |
 | 2 | [`evidence/02-getuserspns-svc_sql.png`](evidence/02-getuserspns-svc_sql.png) | `impacket-GetUserSPNs` as `a.mokaya` enumerating the `svc_sql` SPN and requesting the TGS |
-| 3 | [`evidence/03-john-cracks-password.png`](evidence/03-john-cracks-password.png) | John cracking the RC4 TGS → **`svc_sql : P@ssw0rd`** |
+| 3 | [`evidence/03-john-cracks-password.png`](evidence/03-john-cracks-password.png) | John cracking the RC4 TGS: **`svc_sql : P@ssw0rd`** |
 
 **Blue phase**: screenshots from the Wazuh dashboard at `https://10.10.10.50` (2026-07-25):
 

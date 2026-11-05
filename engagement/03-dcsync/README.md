@@ -23,7 +23,7 @@ recover them via Project 02, or use the lab password.)
 impacket-secretsdump lab.local/b.otieno@10.10.10.10 -just-dc
 # -just-dc pulls NTDS (all domain hashes) via replication.
 ```
-Target just the crown jewels:
+Target just the most sensitive accounts:
 ```bash
 impacket-secretsdump lab.local/b.otieno@10.10.10.10 -just-dc-user krbtgt
 ```
@@ -89,12 +89,12 @@ the point where I detect.
 |------------|--------|----------------|--------------------|-----------|-----------|------------|
 | Intelligence Gathering | Discovery | Remote System Discovery (T1018) | Ping/DNS-confirm the DC before replicating | (ICMP) | No | - |
 | Exploitation | Credential Access | **DCSync (T1003.006)** | `secretsdump` replicates NTDS via DRSUAPI as `b.otieno` | DC01 Event **4662**, replication GUID `1131f6ad…`, subject b.otieno | Yes | **100012** (level 12) |
-| Post-Exploitation | Credential Access / Persistence | Golden Ticket (T1558.001) | krbtgt hash recovered → enables forging a Golden Ticket | none at this step (forging is offline) | No (enabled, not performed) | - |
+| Post-Exploitation | Credential Access / Persistence | Golden Ticket (T1558.001) | krbtgt hash recovered, which enables forging a Golden Ticket | none at this step (forging is offline) | No (enabled, not performed) | - |
 
-> **Impact note for a reviewer:** the input credential came from Project 02
+> **Impact note:** the input credential came from Project 02
 > (T1558.004), and `b.otieno` is a Domain Admin, so the chain reads
 > **T1558.004 → T1003.006 → T1558.001**: anonymous AS-REP roast → DCSync → krbtgt →
 > Golden Ticket. One misconfigured account collapses the whole domain.
 
 **One-line summary:** detects DCSync at the replication step (4662 / GetChanges-All GUID)
-via rule **100012** → MITRE **T1003.006** (Credential Access).
+via rule **100012**, mapped to MITRE **T1003.006** (Credential Access).

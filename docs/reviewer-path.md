@@ -1,4 +1,4 @@
-# Reviewer path: a 3-minute tour
+# Repo guide
 
 Short on time? Here's the fastest route through this repo, in the order that best
 shows how I think.
@@ -32,7 +32,7 @@ there.
 
 ---
 
-**What this repo proves:** I can enumerate and compromise an Active Directory domain
+**What this repo shows:** I can enumerate and compromise an Active Directory domain
 using real attacker tradecraft, map every step to MITRE ATT&CK, *and* explain the fix
 in both technical and business terms. That last part, the remediation and the
 executive framing, is what separates a script-runner from someone you'd hire.

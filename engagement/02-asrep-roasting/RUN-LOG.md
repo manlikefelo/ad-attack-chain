@@ -8,7 +8,7 @@ red phase (KALI01 + DC01 up, Wazuh off).
 
 ## Environment at run time
 - **KALI01**: Kali 2026.2, `felix@felix`, eth0 = NAT (`10.0.2.15`, internet),
-  eth1 = host-only (`10.10.10.40/24`, static, DNS → `10.10.10.10`).
+  eth1 = host-only (`10.10.10.40/24`, static, DNS `10.10.10.10`).
 - **DC01**: `lab.local` DC, `10.10.10.10`, NTDS running, DNS resolving. Reachable
   from Kali over the host-only net.
 - Tooling shipped with Kali: `impacket-GetNPUsers`, `john` (krb5asrep format),
@@ -32,7 +32,7 @@ $krb5asrep$23$b.otieno@LAB.LOCAL:b2ab3b16...<truncated>
 ```
 
 The `$23$` = RC4 (etype 0x17). No password was supplied, yet the DC handed over
-crackable material, that is the whole point of the misconfiguration.
+crackable material, that is how the misconfiguration works.
 
 ## Step 2: Crack the hash offline
 
@@ -99,7 +99,7 @@ the hits (I ran the roast twice, so `firedtimes` = 2) with:
 |-------|-------|
 | rule.id / level | **100011** / 10 |
 | rule.description | AS-REP Roasting: AS-REQ with pre-auth disabled (preAuthType 0) [T1558.004] |
-| rule.mitre | **T1558.004** (Credential Access → AS-REP Roasting) |
+| rule.mitre | **T1558.004** (Credential Access / AS-REP Roasting) |
 | agent.name | **DC01** (id 001) |
 | data.win.system.eventID | **4768** |
 | data.win.eventdata.preAuthType | **0** ← the AS-REP-roast signature |
@@ -131,7 +131,7 @@ Captured full-screen so the whole command chain is legible in one frame:
 |---|------|---------------|
 | 1 | [`evidence/01-kali-reaches-dc.png`](evidence/01-kali-reaches-dc.png) | Kali on `10.10.10.40` reaching DC01 (ping, 0% loss) |
 | 2 | [`evidence/02-getnpusers-asrep.png`](evidence/02-getnpusers-asrep.png) | `impacket-GetNPUsers -no-pass` pulling `b.otieno`'s AS-REP with no credentials |
-| 3 | [`evidence/03-john-cracks-password.png`](evidence/03-john-cracks-password.png) | John cracking the AS-REP → **`b.otieno : Password1`** |
+| 3 | [`evidence/03-john-cracks-password.png`](evidence/03-john-cracks-password.png) | John cracking the AS-REP: **`b.otieno : Password1`** |
 | 4 | [`evidence/04-full-chain.png`](evidence/04-full-chain.png) | The full chain end to end in one maximized terminal: reach → roast → crack → `--show` |
 
 **Blue phase**: screenshot from the Wazuh dashboard (Firefox in the KALI01 session),

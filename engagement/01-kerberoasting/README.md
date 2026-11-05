@@ -18,8 +18,8 @@ which is why Kerberoasting is one of the most common AD attacks in the wild.
 
 ## 2. Attack (from KALI01)
 
-Prereqs: Kali can resolve the domain (DNS → 10.10.10.10) and you have **any** valid
-domain user's credentials (here `a.mokaya`, a normal user. That's the point).
+Prereqs: Kali can resolve the domain (DNS 10.10.10.10) and you have **any** valid
+domain user's credentials (here `a.mokaya`, a normal user).
 
 ```bash
 # Impacket's GetUserSPNs requests TGS tickets for all SPN accounts and prints hashes
@@ -81,7 +81,7 @@ not the point where I detect.
 | Tactic | Technique (ID) | Attacker action in this lab | Telemetry | Detection | Wazuh rule |
 |--------|----------------|------------------------------|-----------|-----------|------------|
 | Credential Access | **Kerberoasting (T1558.003)** | `GetUserSPNs` requests an RC4 TGS for `svc_sql` and dumps the hash | DC01 Event **4769**, `ticketEncryptionType 0x17` (RC4) | Yes | **100010** (level 10) |
-| Credential Access | Brute Force: Password Cracking (T1110.002) | Offline crack of the TGS-REP hash (John/hashcat) → `svc_sql: P@ssw0rd` | none, offline, off-host | No (offline, no telemetry by design) | - |
+| Credential Access | Brute Force: Password Cracking (T1110.002) | Offline crack of the TGS-REP hash (John/hashcat): `svc_sql: P@ssw0rd` | none, offline, off-host | No (offline, no telemetry by design) | - |
 
 **One-line summary:** detects Kerberoasting at the ticket-request step (4769 / RC4)
-via rule **100010** → MITRE **T1558.003** (Credential Access).
+via rule **100010**, mapped to MITRE **T1558.003** (Credential Access).
